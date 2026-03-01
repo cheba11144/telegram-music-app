@@ -121,9 +121,11 @@ let tracks = [];
 fetch('/tracks.json')
   .then(res => res.json())
   .then(files => {
+    console.log("Tracks loaded:", files); // <-- добавь лог
     tracks = files;
     renderPlaylist();
-  });
+  })
+  .catch(err => console.error("Ошибка загрузки tracks.json:", err));
 
 let currentIndex = -1;
 let shuffle = false;
@@ -136,16 +138,21 @@ const searchInput = document.getElementById("searchInput");
 function renderPlaylist(filter="") {
     playlist.innerHTML = "";
 
-    tracks
-        .filter(track => track.name.toLowerCase().includes(filter.toLowerCase()))
-        .forEach((track, index) => {
-            let div = document.createElement("div");
-            div.className = "track";
-            div.innerText = track.name;
-            div.onclick = () => playTrack(index);
-            if(index === currentIndex) div.classList.add("active");
-            playlist.appendChild(div);
-        });
+    const filteredTracks = tracks.filter(track => track.name.toLowerCase().includes(filter.toLowerCase()));
+
+    filteredTracks.forEach((track, i) => {
+        const div = document.createElement("div");
+        div.className = "track";
+        div.innerText = track.name;
+
+        // найти правильный индекс в исходном массиве tracks
+        const originalIndex = tracks.indexOf(track);
+
+        div.onclick = () => playTrack(originalIndex);
+
+        if(originalIndex === currentIndex) div.classList.add("active");
+        playlist.appendChild(div);
+    });
 }
 
 function playTrack(index) {
